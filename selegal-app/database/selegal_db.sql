@@ -228,6 +228,9 @@ SELECT * FROM redes_sociales;
 -- 10. SOLICITANTES
 -- =====================================================
 
+-- INICIO DE LA TABLA SOLICITANTES
+-- requestStore() guarda aquí el nombre, teléfono y correo ingresados en /solicitar.
+-- El id generado se guarda en solicitudes.solicitante_id para vincular ambos registros.
 CREATE TABLE IF NOT EXISTS solicitantes (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nombre_completo VARCHAR(150) NOT NULL,
@@ -237,6 +240,7 @@ CREATE TABLE IF NOT EXISTS solicitantes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+-- FIN DE LA TABLA SOLICITANTES
 
 SELECT * FROM solicitantes;
 
@@ -245,6 +249,9 @@ SELECT * FROM solicitantes;
 -- 11. SOLICITUDES DE CONCILIACION
 -- =====================================================
 
+-- INICIO DE LA TABLA SOLICITUDES
+-- solicitante_id apunta a solicitantes.id y materia_id a materias.id (Civil o Familiar en el formulario).
+-- La solicitud también guarda su descripción y el centro que la atenderá.
 CREATE TABLE IF NOT EXISTS solicitudes (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     centro_id BIGINT UNSIGNED NOT NULL,
@@ -281,6 +288,7 @@ CREATE TABLE IF NOT EXISTS solicitudes (
     INDEX idx_solicitudes_estado (estado),
     INDEX idx_solicitudes_fecha (fecha_solicitud)
 ) ENGINE=InnoDB;
+-- FIN DE LA TABLA SOLICITUDES
 
 SELECT * FROM solicitudes;
 
@@ -353,6 +361,9 @@ SELECT * FROM horarios_atencion;
 -- EL HORARIO SE BLOQUEA AL RESERVARSE
 -- =====================================================
 
+-- INICIO DE LA TABLA CITAS
+-- solicitud_id vincula la cita con solicitudes.id y UNIQUE permite una sola cita por solicitud.
+-- horario_atencion_id apunta al horario semanal de origen. La cita guarda su fecha, horas y estado.
 CREATE TABLE IF NOT EXISTS citas (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     solicitud_id BIGINT UNSIGNED NOT NULL UNIQUE,
@@ -375,8 +386,8 @@ CREATE TABLE IF NOT EXISTS citas (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-    -- Una reserva activa ocupa un horario.
-    -- Las citas canceladas liberan el espacio.
+    -- slot_activo combina la fecha y la hora de inicio de una cita no cancelada.
+    -- Al cancelar, slot_activo pasa a NULL y deja libre el bloque para otra solicitud.
     slot_activo VARCHAR(32)
         GENERATED ALWAYS AS (
             CASE
@@ -385,6 +396,8 @@ CREATE TABLE IF NOT EXISTS citas (
             END
         ) STORED,
 
+    -- Si dos visitantes intentan reservar el mismo bloque del centro, el índice rechaza el segundo registro.
+    -- book() devuelve un mensaje para que el visitante elija otra hora.
     UNIQUE KEY uk_cita_horario (centro_id, slot_activo),
 
     FOREIGN KEY (solicitud_id)
@@ -408,6 +421,7 @@ CREATE TABLE IF NOT EXISTS citas (
     INDEX idx_citas_fecha (fecha),
     INDEX idx_citas_estado (estado)
 ) ENGINE=InnoDB;
+-- FIN DE LA TABLA CITAS
 
 SELECT * FROM citas;
 
@@ -417,6 +431,9 @@ SELECT * FROM citas;
 -- AVISOS DE NUEVAS SOLICITUDES AL CENTRO
 -- =====================================================
 
+-- INICIO DE LA TABLA NOTIFICACIONES
+-- solicitud_id apunta a solicitudes.id y permite saber qué solicitud generó el aviso.
+-- requestStore() registra el aviso de SISTEMA y notifyRequest() gestiona el aviso por EMAIL.
 CREATE TABLE IF NOT EXISTS notificaciones (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     solicitud_id BIGINT UNSIGNED NOT NULL,
@@ -444,6 +461,7 @@ CREATE TABLE IF NOT EXISTS notificaciones (
 
     INDEX idx_notificaciones_estado (estado)
 ) ENGINE=InnoDB;
+-- FIN DE LA TABLA NOTIFICACIONES
 
 SELECT * FROM notificaciones;
 

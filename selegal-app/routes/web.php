@@ -1,47 +1,74 @@
 <?php
 
+// Route registra las URL; S y Access conectan con sus controladores.
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SiteController as S;
 use App\Http\Controllers\AccessController as Access;
 
+// Páginas públicas: GET conecta cada URL con su método de SiteController.
+// name permite referirse a cada ruta por su nombre desde otras partes de Laravel.
 Route::get('/', [S::class,'home'])->name('home');
 Route::get('/servicios', [S::class,'services'])->name('services');
 Route::get('/proceso', [S::class,'process'])->name('process');
 Route::get('/equipo', [S::class,'team'])->name('team');
 Route::get('/testimonios', [S::class,'testimonials'])->name('testimonials');
 Route::get('/contacto', [S::class,'contact'])->name('contact');
+// INICIO DE LAS RUTAS DE SOLICITUD
+// GET /solicitar abre el formulario de site.blade.php mediante requestForm().
 Route::get('/solicitar', [S::class,'requestForm'])->name('request.form');
+// El formulario envía a request.store: requestStore() valida y guarda la solicitud.
+// throttle limita el envío a 10 intentos por minuto.
 Route::post('/solicitar', [S::class,'requestStore'])->middleware('throttle:10,1')->name('request.store');
+// requestStore() redirige a request.success para mostrar el resultado mediante requestSuccess().
 Route::get('/solicitud-enviada', [S::class,'requestSuccess'])->name('request.success');
+// FIN DE LAS RUTAS DE SOLICITUD
+// INICIO DE LAS RUTAS DE AGENDA Y CITA
+// El enlace de Solicitud enviada abre /agendar y schedule() carga los horarios libres.
 Route::get('/agendar', [S::class,'schedule'])->name('schedule');
+// La agenda envía la fecha y hora a book() para reservar la cita de la solicitud en sesión.
 Route::post('/agendar', [S::class,'book'])->name('book');
+// Tras reservar, book() redirige a booked para que booked() muestre el detalle de la cita.
 Route::get('/cita-confirmada', [S::class,'booked'])->name('booked');
+// FIN DE LAS RUTAS DE AGENDA Y CITA
+// Acceso al panel: login muestra el formulario y authenticate procesa el ingreso.
+// throttle limita la autenticación a 5 intentos por minuto.
 Route::get('/admin/login', [S::class,'login'])->name('login');
 Route::post('/admin/login', [S::class,'authenticate'])->middleware('throttle:5,1');
+// Rutas privadas: auth exige sesión y prefix añade /admin a cada URL.
 Route::middleware('auth')->prefix('admin')->group(function () {
+ // Roles, permisos y asignaciones: métodos de AccessController; solo ADMINISTRADOR.
  Route::get('/accesos', [Access::class,'index'])->middleware('role:ADMINISTRADOR')->name('admin.access');
  Route::post('/accesos/roles', [Access::class,'saveRole'])->middleware('role:ADMINISTRADOR')->name('admin.access.roles');
  Route::post('/accesos/roles/{role}/eliminar', [Access::class,'deleteRole'])->middleware('role:ADMINISTRADOR')->name('admin.access.roles.delete');
  Route::post('/accesos/permisos', [Access::class,'savePermission'])->middleware('role:ADMINISTRADOR')->name('admin.access.permissions');
  Route::post('/accesos/usuarios/{user}', [Access::class,'assign'])->middleware('role:ADMINISTRADOR')->name('admin.access.assign');
+ // Sesión y panel principal: métodos logout y dashboard de SiteController.
  Route::post('/salir', [S::class,'logout'])->name('logout');
  Route::get('/', [S::class,'dashboard'])->name('admin.dashboard');
+ // Solicitudes: listar y marcar como contactadas; requiere el permiso indicado.
  Route::get('/solicitudes', [S::class,'requests'])->middleware('permission:solicitudes ver')->name('admin.requests');
  Route::post('/solicitudes/{id}/contactado', [S::class,'contacted'])->middleware('permission:solicitudes ver')->name('admin.contacted');
+ // Citas: listar, registrar, cambiar estado y obtener ticket; requiere permiso de citas.
+ // {id} identifica la cita que recibe el método del controlador.
  Route::get('/citas', [S::class,'appointments'])->middleware('permission:citas gestionar')->name('admin.appointments');
  Route::post('/citas', [S::class,'adminBook'])->middleware('permission:citas gestionar')->name('admin.appointments.store');
  Route::post('/citas/{id}/estado', [S::class,'appointmentStatus'])->middleware('permission:citas gestionar')->name('admin.appointment.status');
  Route::get('/citas/{id}/ticket', [S::class,'ticket'])->middleware('permission:citas gestionar')->name('admin.ticket');
+ // Equipo: listar, guardar y eliminar miembros; requiere permiso de contenido.
  Route::get('/equipo', [S::class,'adminTeam'])->middleware('permission:contenido gestionar')->name('admin.team');
  Route::post('/equipo', [S::class,'saveMember'])->middleware('permission:contenido gestionar')->name('admin.member.save');
  Route::post('/equipo/{id}/eliminar', [S::class,'deleteMember'])->middleware('permission:contenido gestionar')->name('admin.member.delete');
+ // Testimonios: listar, guardar y cambiar visibilidad; requiere permiso de contenido.
  Route::get('/testimonios', [S::class,'adminTestimonials'])->middleware('permission:contenido gestionar')->name('admin.testimonials');
  Route::post('/testimonios', [S::class,'saveTestimonial'])->middleware('permission:contenido gestionar')->name('admin.testimonial.save');
  Route::post('/testimonios/{id}/visibilidad', [S::class,'toggleTestimonial'])->middleware('permission:contenido gestionar')->name('admin.testimonial.toggle');
+ // Contacto: consultar y guardar datos; requiere permiso de contenido.
  Route::get('/contacto', [S::class,'adminContact'])->middleware('permission:contenido gestionar')->name('admin.contact');
  Route::post('/contacto', [S::class,'saveContact'])->middleware('permission:contenido gestionar')->name('admin.contact.save');
+ // Horarios: consultar y guardar disponibilidad; requiere permiso de horarios.
  Route::get('/horarios', [S::class,'availability'])->middleware('permission:horarios gestionar')->name('admin.availability');
  Route::post('/horarios', [S::class,'saveAvailability'])->middleware('permission:horarios gestionar')->name('admin.availability.save');
+ // Usuarios: listar y guardar; solo el rol ADMINISTRADOR puede acceder.
  Route::get('/usuarios', [S::class,'users'])->middleware('role:ADMINISTRADOR')->name('admin.users');
  Route::post('/usuarios', [S::class,'saveUser'])->middleware('role:ADMINISTRADOR')->name('admin.users.save');
 });

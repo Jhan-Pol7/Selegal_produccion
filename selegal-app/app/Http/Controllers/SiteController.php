@@ -13,22 +13,64 @@ class SiteController extends Controller {
  private function appointmentsQuery(){return DB::table('citas as c')->join('solicitudes as s','s.id','=','c.solicitud_id')->join('solicitantes as p','p.id','=','s.solicitante_id')->join('materias as m','m.id','=','s.materia_id')->selectRaw("c.id,c.solicitud_id as request_id,c.fecha as day, TIME_FORMAT(c.hora_inicio,'%H:%i') as time, p.nombre_completo as name,m.nombre as matter, CASE c.estado WHEN 'CANCELADA' THEN 'Cancelada' WHEN 'REAGENDADA' THEN 'Reprogramada' WHEN 'FINALIZADA' THEN 'Finalizada' WHEN 'PENDIENTE' THEN 'Pendiente' ELSE 'Confirmada' END as status");}
  private function members(){return DB::table('equipo')->where('centro_id',$this->center()->id)->selectRaw('id,nombre_completo as name,cargo as role,fotografia as photo,descripcion as description,0 as example');}
  private function reviews(){return DB::table('testimonios')->where('centro_id',$this->center()->id)->selectRaw('id,nombre_cliente as name,contenido as body,visible,0 as example');}
+ // INICIO DE LOS HORARIOS DISPONIBLES
+ // slots(): toma los horarios semanales activos del centro y divide cada día en bloques según su duración.
+ // Revisa 60 días desde hoy y devuelve solo las horas futuras que no tienen una cita sin cancelar.
  private function slots(){ $center=$this->center();$hours=DB::table('horarios_atencion')->where('centro_id',$center->id)->where('activo',1)->get();$booked=DB::table('citas')->where('centro_id',$center->id)->where('fecha','>=',today()->toDateString())->where('estado','!=','CANCELADA')->get()->mapWithKeys(fn($a)=>[$a->fecha.'|'.substr($a->hora_inicio,0,5)=>true]);$out=collect();for($n=0;$n<60;$n++){ $day=today()->addDays($n);foreach($hours->where('dia_semana',$day->dayOfWeekIso) as $h){$t=Carbon::parse($day->toDateString().' '.$h->hora_inicio);$end=Carbon::parse($day->toDateString().' '.$h->hora_fin);while($t->copy()->addMinutes($h->duracion_minutos)->lte($end)){ $key=$day->toDateString().'|'.$t->format('H:i');if(!isset($booked[$key]) && $t->isFuture())$out->push((object)['day'=>$day->toDateString(),'time'=>$t->format('H:i')]);$t->addMinutes($h->duracion_minutos);}}}return $out; }
+ // FIN DE LOS HORARIOS DISPONIBLES
+ // INICIO DE LA RESERVA DEL HORARIO
+ // reserve(): comprueba que la hora sea futura y que el bloque coincida con el horario activo y quepa por completo.
+ // Inserta la cita CONFIRMADA con solicitud_id y horario_atencion_id y calcula la hora de fin.
  private function reserve($requestId,$day,$time){$center=$this->center();$date=Carbon::parse($day);$h=DB::table('horarios_atencion')->where('centro_id',$center->id)->where('dia_semana',$date->dayOfWeekIso)->where('activo',1)->get()->first(function($h)use($day,$time){$start=Carbon::parse($day.' '.$h->hora_inicio);$selected=Carbon::parse($day.' '.$time);return $selected->gte($start) && $selected->copy()->addMinutes($h->duracion_minutos)->lte(Carbon::parse($day.' '.$h->hora_fin)) && $start->diffInMinutes($selected)%$h->duracion_minutos===0 && $selected->isFuture();});if(!$h)throw new \RuntimeException('Horario no disponible.');return DB::table('citas')->insertGetId(['solicitud_id'=>$requestId,'centro_id'=>$center->id,'horario_atencion_id'=>$h->id,'fecha'=>$day,'hora_inicio'=>$time,'hora_fin'=>Carbon::parse($day.' '.$time)->addMinutes($h->duracion_minutos)->format('H:i:s'),'estado'=>'CONFIRMADA']);}
- public function home(){return $this->view('home',['members'=>$this->members()->where('visible',1)->get(),'testimonials'=>$this->reviews()->where('visible',1)->get()]);} public function services(){return $this->view('services');} public function process(){return $this->view('process');} public function contact(){return $this->view('contact');} public function requestForm(){return $this->view('request');} public function login(){return $this->view('login');}
+ // FIN DE LA RESERVA DEL HORARIO
+ public function home(){return $this->view('home',['members'=>$this->members()->where('visible',1)->get(),'testimonials'=>$this->reviews()->where('visible',1)->get()]);} public function services(){return $this->view('services');} public function process(){return $this->view('process');} public function contact(){return $this->view('contact');}
+ // INICIO DE LA APERTURA DEL FORMULARIO
+ // Muestra el bloque request de site.blade.php.
+ public function requestForm(){return $this->view('request');}
+ // FIN DE LA APERTURA DEL FORMULARIO
+ public function login(){return $this->view('login');}
  public function team(){return $this->view('team',['members'=>$this->members()->where('visible',1)->get()]);} public function testimonials(){return $this->view('testimonials',['testimonials'=>$this->reviews()->where('visible',1)->get()]);}
+ // INICIO DEL REGISTRO DE LA SOLICITUD
+ // requestStore(): valida los cinco campos, el formato del correo y la materia (Civil o Familiar).
+ // Si hay errores, Laravel regresa al formulario antes de guardar datos en MySQL.
+ // DB::transaction() guarda juntos al solicitante, su solicitud y el aviso de sistema en notificaciones.
+ // La solicitud vincula a la persona y a la materia por sus IDs. El aviso de sistema usa el ID de la solicitud.
+ // Tras guardar, llama a notifyRequest(), guarda request_id en sesión y redirige a request.success.
  public function requestStore(Request $r){$v=$r->validate(['name'=>'required|string|max:150','phone'=>'required|string|max:20','email'=>'required|email|max:150','matter'=>['required',Rule::in(['Civil','Familiar'])],'description'=>'required|string|max:3000'],['required'=>'Este campo es obligatorio']);$id=DB::transaction(function()use($v){$p=DB::table('solicitantes')->insertGetId(['nombre_completo'=>$v['name'],'telefono'=>$v['phone'],'email'=>$v['email']]);$id=DB::table('solicitudes')->insertGetId(['centro_id'=>$this->center()->id,'solicitante_id'=>$p,'materia_id'=>DB::table('materias')->where('nombre',$v['matter'])->value('id'),'descripcion'=>$v['description']]);DB::table('notificaciones')->insert(['solicitud_id'=>$id,'tipo'=>'NUEVA_SOLICITUD','canal'=>'SISTEMA','mensaje'=>'Nueva solicitud recibida.']);return $id;});$this->notifyRequest($id);$r->session()->put('request_id',$id);return redirect()->route('request.success');}
+ // FIN DEL REGISTRO DE LA SOLICITUD
+ // INICIO DEL AVISO POR CORREO
+ // notifyRequest(): registra un aviso de correo PENDIENTE para la solicitud y toma el correo del centro.
+ // El aviso por correo se gestiona después de la transacción que guarda la solicitud.
  private function notifyRequest($id){
   $recipient=$this->center()->email;
   $notice=DB::table('notificaciones')->insertGetId(['solicitud_id'=>$id,'tipo'=>'NUEVA_SOLICITUD','canal'=>'EMAIL','destinatario'=>$recipient,'mensaje'=>'Nueva solicitud disponible en el panel.','estado'=>'PENDIENTE']);
+  // Solo intenta el envío si hay destinatario y el transporte no es log ni array.
   if(!$recipient || in_array(config('mail.default'),['log','array'],true)) return;
+  // Si el envío sale bien, lo marca como ENVIADA y registra la fecha.
   try { \Illuminate\Support\Facades\Mail::raw("Se ha registrado una nueva solicitud (#{$id}). Ingresa al panel de SELEGAL para revisarla.",function($message) use($recipient){$message->to($recipient)->subject('Nueva solicitud de conciliación - SELEGAL');}); DB::table('notificaciones')->where('id',$notice)->update(['estado'=>'ENVIADA','fecha_envio'=>now()]); }
+  // Si el correo falla, la notificación queda como FALLIDA y la solicitud sigue registrada.
   catch(\Throwable $e){DB::table('notificaciones')->where('id',$notice)->update(['estado'=>'FALLIDA']);report($e);}
  }
+ // FIN DEL AVISO POR CORREO
+ // INICIO DE LA CONFIRMACIÓN DE SOLICITUD
+ // requestSuccess(): exige request_id en sesión para mostrar Solicitud enviada.
  public function requestSuccess(Request $r){abort_unless($r->session()->has('request_id'),403);return $this->view('success');}
+ // FIN DE LA CONFIRMACIÓN DE SOLICITUD
+ // INICIO DE LA AGENDA
+ // schedule(): exige request_id en sesión y pasa a la vista los horarios de slots() agrupados por fecha.
  public function schedule(Request $r){abort_unless($r->session()->has('request_id'),403);$slots=$this->slots()->groupBy('day');return $this->view('schedule',compact('slots'));}
+ // FIN DE LA AGENDA
+ // INICIO DEL REGISTRO DE LA CITA
+ // book(): toma la solicitud de la sesión, valida fecha y hora y llama a reserve() dentro de una transacción.
+ // Si el horario dejó de ser válido o MySQL rechaza el bloque ocupado, vuelve a la agenda con un error.
+ // Al reservar, guarda appointment_id en sesión, quita request_id y redirige a la confirmación de cita.
  public function book(Request $r){$id=$r->session()->get('request_id');abort_unless($id,403);$v=$r->validate(['day'=>'required|date|after_or_equal:today','time'=>'required|date_format:H:i']);try{$appointment=DB::transaction(fn()=>$this->reserve($id,$v['day'],$v['time']));}catch(\Illuminate\Database\QueryException|\RuntimeException $e){return back()->withErrors(['day'=>'Este horario ya no está disponible. Elige otro.']);}$r->session()->put('appointment_id',$appointment);$r->session()->forget('request_id');return redirect()->route('booked');}
+ // FIN DEL REGISTRO DE LA CITA
+ // INICIO DE LA CONFIRMACIÓN DE CITA
+ // booked(): usa appointment_id para consultar la cita, el solicitante y la materia con appointmentsQuery().
+ // Pasa los datos a la pantalla de confirmación o devuelve 404 si no encuentra la cita.
  public function booked(Request $r){$a=$this->appointmentsQuery()->where('c.id',$r->session()->get('appointment_id'))->first();abort_unless($a,404);return $this->view('booked',compact('a'));}
+ // FIN DE LA CONFIRMACIÓN DE CITA
  public function authenticate(Request $r){$v=$r->validate(['email'=>'required|email','password'=>'required']);if(Auth::attempt($v+['activo'=>1])){$r->session()->regenerate();return redirect()->intended(route('admin.dashboard'));}return back()->withErrors(['email'=>'Credenciales incorrectas.']);}
  public function logout(Request $r){Auth::logout();$r->session()->invalidate();$r->session()->regenerateToken();return redirect()->route('home');}
  private function admin($page,$data=[]){return $this->view($page,$data);}

@@ -1,0 +1,222 @@
+[
+  {
+    "id": "HU-001",
+    "como": "Visitante",
+    "quiero": "conocer el nombre y la identidad del centro",
+    "para": "saber que es una entidad seria y habilitada",
+    "criterios": [
+      "Dado que el visitante ingresa al portal, cuando visualiza el encabezado, entonces observa el logotipo y el nombre oficial SELEGAL.",
+      "Dado que el visitante accede a la presentación institucional, cuando consulta la información del centro, entonces encuentra su reseña y los datos de acreditación o resolución."
+    ],
+    "rf": [1, 2]
+  },
+  {
+    "id": "HU-002",
+    "como": "Visitante",
+    "quiero": "ver un resumen de los servicios en materia civil y familiar",
+    "para": "saber si el centro puede atender mi caso",
+    "criterios": [
+      "Dado que el visitante abre Servicios, cuando consulta las materias, entonces observa por separado los servicios civiles y familiares.",
+      "Dado que el visitante selecciona una materia, cuando consulta su contenido, entonces obtiene detalles de los servicios y requisitos esenciales."
+    ],
+    "rf": [3]
+  },
+  {
+    "id": "HU-003",
+    "como": "Visitante",
+    "quiero": "ver explicado el proceso de conciliación",
+    "para": "saber qué esperar antes de iniciar un trámite",
+    "criterios": [
+      "Dado que el visitante abre la sección Proceso, cuando consulta su contenido, entonces visualiza las etapas de la conciliación.",
+      "Dado que el visitante quiere conocer una etapa, cuando accede a su detalle, entonces consulta la explicación correspondiente y los plazos informados."
+    ],
+    "rf": [4]
+  },
+  {
+    "id": "HU-004",
+    "como": "Visitante",
+    "quiero": "llenar un formulario de solicitud",
+    "para": "que el centro me contacte sin tener que exponer mi WhatsApp directamente",
+    "criterios": [
+      "Dado que el visitante abre el formulario, cuando consulta los campos, entonces encuentra etiquetas para sus datos de contacto y la descripción del caso.",
+      "Dado que el visitante envía el formulario, cuando faltan campos obligatorios, entonces recibe avisos para corregirlos; si el envío es válido, recibe una confirmación."
+    ],
+    "rf": [5, 6]
+  },
+  {
+    "id": "HU-005",
+    "como": "Abogado que no es conciliador",
+    "quiero": "usar el mismo formulario para derivar un caso",
+    "para": "que sea atendido por los conciliadores del centro",
+    "criterios": [
+      "Dado que un abogado derivante abre el formulario, cuando identifica su perfil, entonces puede registrar los datos del cliente y del caso.",
+      "Dado que el abogado completa la materia y la información de derivación, cuando envía la solicitud, entonces esta queda registrada para la atención correspondiente."
+    ],
+    "rf": [7]
+  },
+  {
+    "id": "HU-006",
+    "como": "Visitante que ya envió el formulario",
+    "quiero": "poder agendar una cita",
+    "para": "continuar con el trámite de conciliación",
+    "criterios": [
+      "Dado que el visitante envió su solicitud, cuando se muestra la confirmación, entonces encuentra una opción para agendar una cita.",
+      "Dado que el visitante accede a la agenda, cuando selecciona una fecha y un turno disponible, entonces puede confirmar la cita y consultar sus detalles."
+    ],
+    "rf": [8]
+  },
+  {
+    "id": "HU-007",
+    "como": "Personal del centro",
+    "quiero": "recibir las solicitudes enviadas desde la web",
+    "para": "poder revisarlas y contactar al solicitante",
+    "criterios": [
+      "Dado que una solicitud se envía desde la web, cuando el personal abre la bandeja, entonces puede identificar el nuevo ingreso por su fecha, solicitante y asunto.",
+      "Dado que el personal selecciona una solicitud, cuando consulta el detalle, entonces encuentra la descripción del caso y los datos de contacto."
+    ],
+    "rf": [9, 10]
+  },
+  {
+    "id": "HU-008",
+    "como": "Visitante",
+    "quiero": "encontrar los datos de contacto y ubicación",
+    "para": "poder comunicarme o visitar la institución",
+    "criterios": [
+      "Dado que el visitante consulta Contacto o el pie de página, cuando busca los canales de atención, entonces encuentra teléfono, correo y ubicación publicados.",
+      "Dado que el visitante consulta la ubicación, cuando abre la sección de contacto, entonces puede identificar el punto de atención en el mapa."
+    ],
+    "rf": [11, 12]
+  },
+  {
+    "id": "HU-009",
+    "como": "Visitante",
+    "quiero": "encontrar enlaces a las redes sociales del centro",
+    "para": "seguir su contenido y novedades",
+    "criterios": [
+      "Dado que el visitante revisa el encabezado o el pie del sitio, cuando busca los canales sociales, entonces identifica sus iconos.",
+      "Dado que el visitante selecciona una red social, cuando activa el enlace, entonces se abre el perfil oficial correspondiente."
+    ],
+    "rf": [13]
+  },
+  {
+    "id": "HU-010",
+    "como": "Administrador",
+    "quiero": "agregar, editar y eliminar perfiles de abogados y conciliadores",
+    "para": "mantener actualizada la nómina conforme el centro crezca",
+    "criterios": [
+      "Dado que el administrador accede al panel, cuando abre la gestión del equipo, entonces consulta la lista y las acciones para agregar, editar o eliminar perfiles.",
+      "Dado que el administrador registra o actualiza un perfil, cuando guarda sus datos, entonces la lista y la presentación pública reflejan los cambios."
+    ],
+    "rf": [14, 15, 16]
+  },
+  {
+    "id": "HU-011",
+    "como": "Administrador",
+    "quiero": "editar los datos de contacto y decidir si se muestra o no la dirección",
+    "para": "publicarla solo cuando el centro tenga su dirección acreditada por el Ministerio de Justicia",
+    "criterios": [
+      "Dado que el administrador modifica teléfono, correo o dirección, cuando guarda los cambios, entonces se actualizan los datos de contacto.",
+      "Dado que el administrador modifica la opción de visibilidad, cuando guarda la configuración, entonces la dirección se muestra u oculta conforme a la acreditación."
+    ],
+    "rf": [17, 18]
+  },
+  {
+    "id": "HU-012",
+    "como": "Visitante",
+    "quiero": "ver testimonios de otras personas atendidas",
+    "para": "confiar en el centro",
+    "criterios": [
+      "Dado que el visitante abre Testimonios, cuando se muestra la sección, entonces puede leer las opiniones publicadas.",
+      "Dado que hay varios testimonios, cuando utiliza la navegación de la sección, entonces puede consultar las demás opiniones."
+    ],
+    "rf": [19]
+  },
+  {
+    "id": "HU-013",
+    "como": "Administrador",
+    "quiero": "agregar, editar y ocultar testimonios",
+    "para": "completar la sección con casos reales a medida que el centro atienda clientes",
+    "criterios": [
+      "Dado que el administrador registra un testimonio, cuando guarda los datos del cliente y su opinión, entonces el registro aparece en la lista de gestión.",
+      "Dado que el administrador cambia la visibilidad, cuando guarda la acción, entonces el testimonio se muestra u oculta en la web."
+    ],
+    "rf": [20]
+  },
+  {
+    "id": "HU-014",
+    "como": "Visitante",
+    "quiero": "elegir un día y horario disponible",
+    "para": "reservar mi cita sin esperar a que me la coordinen manualmente",
+    "criterios": [
+      "Dado que el visitante abre la agenda, cuando selecciona un día operativo, entonces puede consultar los turnos disponibles.",
+      "Dado que el visitante confirma un turno libre, cuando se procesa la reserva, entonces la cita queda registrada, el turno se bloquea y se muestra la confirmación."
+    ],
+    "rf": [21, 22, 23, 24]
+  },
+  {
+    "id": "HU-015",
+    "como": "Visitante",
+    "quiero": "saber cuánto demora la conciliación y qué debo presentar",
+    "para": "llegar preparado",
+    "criterios": [
+      "Dado que el visitante consulta la información previa al trámite, cuando revisa requisitos y tiempos, entonces encuentra los documentos y plazos informados.",
+      "Dado que el visitante desea conservar los requisitos, cuando consulta la lista o guía, entonces puede conocer la documentación necesaria."
+    ],
+    "rf": [25]
+  },
+  {
+    "id": "HU-016",
+    "como": "Visitante",
+    "quiero": "reprogramar o cancelar mi cita por WhatsApp",
+    "para": "hacerlo por el canal que el centro usa a diario",
+    "criterios": [
+      "Dado que el visitante tiene una cita, cuando consulta su confirmación, entonces encuentra el acceso a WhatsApp para pedir cambios.",
+      "Dado que el visitante activa el botón de WhatsApp, cuando se abre la conversación, entonces se prepara un mensaje con la solicitud de cambio y la fecha de la cita."
+    ],
+    "rf": [12, 24]
+  },
+  {
+    "id": "HU-017",
+    "como": "Recepcionista",
+    "quiero": "registrar una cita desde el panel para una solicitud existente o nueva",
+    "para": "organizar la atención coordinada por el centro",
+    "criterios": [
+      "Dado que recepción tiene permiso de gestión de citas, cuando selecciona una solicitud sin cita y un turno disponible, entonces el sistema registra la cita.",
+      "Dado que recepción ingresa los datos de una solicitud nueva y un turno, cuando confirma la operación, entonces se guardan conjuntamente la solicitud y la cita; ante un conflicto se informa el error."
+    ],
+    "rf": [26]
+  },
+  {
+    "id": "HU-018",
+    "como": "Recepcionista",
+    "quiero": "abrir e imprimir el ticket de una cita",
+    "para": "contar con una constancia que identifique la atención",
+    "criterios": [
+      "Dado que recepción consulta una cita, cuando abre su ticket, entonces ve el identificador, fecha, hora, materia y código de barras de esa cita.",
+      "Dado que el ticket está abierto, cuando se elige imprimir, entonces se presenta la vista diseñada para papel térmico de 80 mm."
+    ],
+    "rf": [27]
+  },
+  {
+    "id": "HU-019",
+    "como": "Administrador",
+    "quiero": "gestionar las cuentas, roles y permisos del personal",
+    "para": "organizar el acceso a las funciones del panel",
+    "criterios": [
+      "Dado que el administrador crea una cuenta, cuando ingresa un correo único y una contraseña confirmada de al menos 12 caracteres, entonces el sistema registra el usuario y su rol.",
+      "Dado que el administrador gestiona roles y permisos, cuando guarda una asignación válida, entonces el sistema aplica las autorizaciones y protege los roles y permisos de sistema."
+    ],
+    "rf": [28]
+  },
+  {
+    "id": "HU-020",
+    "como": "Personal del centro",
+    "quiero": "consultar el resumen operativo del panel",
+    "para": "identificar solicitudes recientes y próximas citas",
+    "criterios": [
+      "Dado que una cuenta tiene permiso de solicitudes o de citas, cuando abre el panel, entonces consulta los conteos de solicitudes pendientes y próximas citas.",
+      "Dado que el panel muestra actividad reciente, cuando existen solicitudes registradas, entonces presenta hasta cinco solicitudes ordenadas desde la más reciente."
+    ],
+    "rf": [29]
+  }
+]

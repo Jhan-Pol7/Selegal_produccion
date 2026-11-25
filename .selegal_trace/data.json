@@ -1,0 +1,29 @@
+{
+  "newRf": [
+    ["Gestión de citas", "Registro de citas en el panel", "Recepción", "RF26", "Registrar una cita desde el panel administrativo", "El personal con permiso de citas puede elegir una solicitud existente sin cita o crear solicitante y solicitud al reservar un turno disponible. Una operación con conflicto se revierte y muestra un aviso."],
+    ["Gestión de citas", "Constancia de cita", "Recepción", "RF27", "Generar e imprimir el ticket de una cita", "El personal autorizado puede abrir la constancia de una cita desde el panel. La vista imprimible incluye identificador, fecha, hora, materia y código de barras Code 39, con diseño para papel de 80 mm."],
+    ["Administración", "Usuarios, roles y permisos", "Administrador", "RF28", "Administrar usuarios, roles y permisos", "El administrador crea usuarios con correo único y contraseña confirmada de al menos 12 caracteres, asigna roles y gestiona permisos. Las rutas comprueban las autorizaciones correspondientes."],
+    ["Gestión de atención", "Resumen del panel", "Personal del centro", "RF29", "Consultar el resumen operativo del panel", "El panel muestra conteos de solicitudes pendientes y próximas citas, junto con hasta cinco solicitudes recientes, cuando el usuario cuenta con permiso de solicitudes o citas. Los demás perfiles ven una bienvenida."]
+  ],
+  "rnf": [
+    [5,"RNF01","El sistema debe garantizar que los datos del formulario se conserven después de un envío correcto."],
+    [6,"RNF02","El sistema debe mostrar un mensaje de confirmación al usuario después de enviar correctamente el formulario."],
+    [7,"RNF16","El registro del solicitante, la solicitud y el aviso interno debe realizarse en una transacción para evitar altas parciales."],
+    [9,"RNF03","El sistema debe cargar las páginas principales en menos de 3 segundos en condiciones normales de conexión, como objetivo de rendimiento."],
+    [10,"RNF04","El sistema debe permitir completar el formulario y consultar la agenda en conexiones de internet limitadas."],
+    [12,"RNF05","El sistema debe permitir actualizar los datos de contacto y el contenido disponible desde el panel autorizado."],
+    [16,"RNF06","El sistema debe visualizarse correctamente en computadoras, tabletas y dispositivos móviles mediante diseño adaptable."],
+    [17,"RNF07","El sistema debe funcionar en navegadores modernos como Chrome, Edge, Firefox y Safari."],
+    [21,"RNF08","El sistema debe respetar la identidad visual de SELEGAL, incluyendo sus colores y elementos gráficos."],
+    [22,"RNF09","El sistema debe mantener un formulario simple y comprensible, con etiquetas y mensajes claros."],
+    [25,"RNF10","El sistema debe proteger la información ingresada mediante los formularios frente a accesos no autorizados."],
+    [26,"RNF11","El sistema debe validar los datos ingresados para evitar información incompleta o inválida."],
+    [27,"RNF17","La base de datos debe impedir más de una cita por solicitud y evitar que dos citas activas ocupen el mismo turno del centro."],
+    [28,"RNF18","Los formularios deben protegerse con CSRF; el ingreso y el envío de solicitudes deben limitarse a 5 y 10 intentos por minuto, respectivamente."],
+    [30,"RNF12","El tratamiento de los datos personales debe cumplir la Ley N.° 29733 de Protección de Datos Personales indicada en el proyecto."],
+    [31,"RNF13","El sistema debe informar al usuario sobre el tratamiento de sus datos personales y solicitar su consentimiento cuando corresponda."],
+    [32,"RNF14","El sistema debe publicar únicamente la dirección acreditada por el MINJUSDH cuando la visibilidad esté habilitada."],
+    [33,"RNF15","El sistema debe restringir el acceso a solicitudes y al panel administrativo a usuarios autorizados."]
+  ],
+  "mapping": [[1,2],[3],[4],[5,6],[7],[8],[9,10],[11,12],[13],[14,15,16],[17,18],[19],[20],[21,22,23,24],[25],[12,24]]
+}

@@ -1,6 +1,40 @@
-const menu=document.querySelector('.menu-toggle');if(menu){const nav=document.querySelector('.public-nav');const setMenu=open=>{nav.classList.toggle('open',open);menu.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');menu.textContent=open?'×':'☰'};menu.addEventListener('click',()=>setMenu(!nav.classList.contains('open')));nav.addEventListener('click',e=>{if(e.target.closest('a'))setMenu(false)});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav.classList.contains('open')){setMenu(false);menu.focus()}});document.addEventListener('click',e=>{if(!menu.contains(e.target)&&!nav.contains(e.target))setMenu(false)});window.matchMedia('(min-width: 901px)').addEventListener('change',e=>{if(e.matches)setMenu(false)});}
+const menu = document.querySelector('.menu-toggle');
+const nav = document.querySelector('.public-nav');
+
+if (menu && nav) {
+    const setMenu = open => {
+        nav.classList.toggle('open', open);
+        menu.setAttribute('aria-expanded', String(open));
+        menu.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    };
+
+    menu.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
+    nav.addEventListener('click', event => {
+        if (event.target.closest('a')) setMenu(false);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && nav.classList.contains('open')) {
+            setMenu(false);
+            menu.focus();
+        }
+    });
+    document.addEventListener('click', event => {
+        if (!menu.contains(event.target) && !nav.contains(event.target)) setMenu(false);
+    });
+    window.matchMedia('(min-width: 1120px)').addEventListener('change', event => {
+        if (event.matches) setMenu(false);
+    });
+}
+// INICIO DEL SELECTOR DE HORAS
+// site.blade.php publica en window.availableSlots las horas que el controlador agrupó por día.
+// Al elegir un día se cargan sus horas en el selector y, al escoger una hora, se habilita el botón.
 const day=document.querySelector('#day'),time=document.querySelector('#time'),book=document.querySelector('#book-button');if(day&&time&&book){const updateTimes=()=>{const selected=time.dataset.selected||'';time.innerHTML='<option value="">Selecciona un horario</option>';(window.availableSlots[day.value]||[]).forEach(t=>{let o=document.createElement('option');o.value=t;o.textContent=t;o.selected=t===selected;time.appendChild(o)});time.disabled=!day.value;book.disabled=!time.value;time.dataset.selected=''};day.addEventListener('change',updateTimes);time.addEventListener('change',()=>book.disabled=!time.value);updateTimes();}
+// FIN DEL SELECTOR DE HORAS
+// INICIO DE LA VALIDACIÓN DEL FORMULARIO
+// En formularios con novalidate, revisa los campos required antes de enviar y muestra el error junto a cada campo vacío.
+// Si faltan datos, bloquea el envío. Cuando llega el POST a /solicitar, Laravel aplica las reglas de requestStore().
 document.querySelectorAll('form[novalidate]').forEach(form=>form.addEventListener('submit',e=>{let invalid=false;form.querySelectorAll('[required]').forEach(input=>{let old=input.parentElement.querySelector('.client-error');if(old)old.remove();if(!input.value.trim()){invalid=true;let msg=document.createElement('small');msg.className='error client-error';msg.textContent='Este campo es obligatorio';input.after(msg)}});if(invalid)e.preventDefault()}));
+// FIN DE LA VALIDACIÓN DEL FORMULARIO
 document.querySelectorAll('[data-list]').forEach(box=>{const rows=[...box.querySelectorAll('[data-list-row]')],search=box.querySelector('[data-list-search]'),controls=box.querySelector('[data-pagination]');if(!controls)return;let page=0;const size=10,info=controls.querySelector('[data-page-info]'),prev=controls.querySelector('[data-prev]'),next=controls.querySelector('[data-next]');function render(){const term=search.value.trim().toLocaleLowerCase('es'),visible=rows.filter(r=>r.textContent.toLocaleLowerCase('es').includes(term)),pages=Math.max(1,Math.ceil(visible.length/size));page=Math.min(page,pages-1);rows.forEach(r=>r.hidden=true);visible.slice(page*size,(page+1)*size).forEach(r=>r.hidden=false);controls.hidden=rows.length===0;info.textContent=visible.length?`${page*size+1}–${Math.min((page+1)*size,visible.length)} de ${visible.length}`:'Sin resultados';prev.disabled=page===0;next.disabled=page>=pages-1}search.addEventListener('input',()=>{page=0;render()});prev.addEventListener('click',()=>{page--;render()});next.addEventListener('click',()=>{page++;render()});render()});
 
 const mode=document.querySelector('#booking-mode');if(mode){const updateMode=()=>{[['new-request','new'],['existing-request','existing']].forEach(([id,value])=>{const section=document.getElementById(id),active=mode.value===value;section.hidden=!active;section.querySelectorAll('input,select,textarea').forEach(field=>field.disabled=!active);});};mode.addEventListener('change',updateMode);updateMode();}
